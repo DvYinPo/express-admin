@@ -1,0 +1,16 @@
+version: '3'
+name: express
+
+services:
+  db_postgres:
+    image: postgres:14.3
+    container_name: psql14
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - ${POSTGRES_PORT}:5432
+    volumes:
+      - ${POSTGRES_VOLUMES}:/var/lib/postgresql/data

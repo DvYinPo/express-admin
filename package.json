@@ -1,0 +1,20 @@
+{
+    "name": "express-admin",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "start": "cross-env NODE_ENV=developement nodemon ./bin/www",
+        "start:production": "cross-env NODE_ENV=production nodemon ./bin/www"
+    },
+    "dependencies": {
+        "cookie-parser": "~1.4.4",
+        "express": "~4.16.1",
+        "http-errors": "~1.6.3",
+        "morgan": "~1.9.1"
+    },
+    "devDependencies": {
+        "cross-env": "^7.0.3",
+        "dotenv": "^16.0.1",
+        "nodemon": "^2.0.16"
+    }
+}
