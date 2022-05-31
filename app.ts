@@ -3,21 +3,24 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-require('dotenv').config({ path: process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : null });
+const psqlConnection = require('./src/database/connection')
 
-var indexRouter = require('./src/routes/index');
-var usersRouter = require('./src/routes/users');
+require('dotenv').config({ path: process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : null });
+require('reflect-metadata');
+
+const routerInit = require('./src/routes')
 
 var app = express();
 
+// middleware initialisation
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+// router initialisation
+routerInit(app);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -32,7 +35,10 @@ app.use(function(err, req, res, next) {
 
     // render the error page
     res.status(err.status || 500);
-    res.render('error');
+    res.send('error');
 });
+
+// database initialisation
+psqlConnection();
 
 module.exports = app;

@@ -2,10 +2,13 @@
 **/node_modules
 
 # environment config
-**/.env.production
+**/.env.*
 
 # production
 **/build
 
 # docker data
 docker
+
+# vscode setting
+.vscode
