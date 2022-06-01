@@ -9,10 +9,10 @@ dotenv.config({
   path: process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : null,
 });
 
-import routerInit from "./src/routes";
+import routerInit from "./routes";
 
 // database initialisation
-import "./src/database/connection";
+// import "./database/connection";
 
 var app = express();
 
