@@ -1,3 +1,1 @@
-module.exports = {
-    user: require('./user'),
-}
+export { default as User } from './user'

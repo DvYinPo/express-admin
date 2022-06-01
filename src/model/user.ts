@@ -1,33 +1,41 @@
-const { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } = require("typeorm");
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Generated,
+} from "typeorm";
 
 @Entity()
 export class User {
-    @PrimaryGeneratedColumn()
-    id: number;
+  @PrimaryGeneratedColumn()
+  @Generated()
+  id: number;
 
-    @Column()
-    firstName: string;
+  @Column({length: 20})
+  firstName: string;
 
-    @Column()
-    lastName: string;
+  @Column({nullable: true, length: 20})
+  lastName: string;
 
-    @Column()
-    password: string;
+  @Column({length: 20})
+  password: string;
 
-    @Column()
-    email: string;
+  @Column({nullable: true})
+  email: string;
 
-    @Column()
-    phoneNumber: string;
+  @Column({nullable: true})
+  phoneNumber: string;
 
-    @Column()
-    isActive: boolean;
+  @Column({default: true})
+  isActive: boolean;
 
-    @CreateDateColumn()
-    createDate: Date;
+  @CreateDateColumn()
+  createDate: Date;
 
-    @UpdateDateColumn()
-    updateDate: Date;
+  @UpdateDateColumn()
+  updateDate: Date;
 }
 
-module.exports = User
+export default User;

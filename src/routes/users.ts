@@ -1,17 +1,12 @@
-var express = require('express');
-var router = express.Router();
-const { getConnection } = require("typeorm");
-const { User } = require('../model');
+import express from "express";
+const router = express.Router();
+import { getConnection } from "typeorm";
+import { User } from "../model";
 
 /* GET users listing. */
-router.get('/', async function(req, res, next) {
-    const firstUser = await getConnection()
-        .createQueryBuilder()
-        .insert()
-        .into(User)
-        .values([{ firstName: "Timber", lastName: "Saw" }, { firstName: "Phantom", lastName: "Lancer" }])
-        .execute();
-    res.send(firstUser);
+router.get("/", async function (req, res, next) {
+  const firstUser = '/hahahahaha'
+  res.send(firstUser);
 });
 
-module.exports = router;
+export default router;
