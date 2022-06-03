@@ -4,31 +4,29 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  Generated,
 } from "typeorm";
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
-  @Generated()
   id: number;
 
-  @Column({length: 20})
-  firstName: string;
+  @Column('varchar', {length: 20, unique: true})
+  name: string;
 
-  @Column({nullable: true, length: 20})
-  lastName: string;
-
-  @Column({length: 20})
+  @Column('varchar', {length: 50})
   password: string;
 
-  @Column({nullable: true})
+  @Column('varchar', {nullable: true, unique: true, length: 20})
   email: string;
 
-  @Column({nullable: true})
+  @Column('varchar', {nullable: true, unique: true, length: 20})
   phoneNumber: string;
 
-  @Column({default: true})
+  @Column('varchar', {default: '/avatar', length: 2000})
+  avatar: string;
+
+  @Column('boolean', {default: true})
   isActive: boolean;
 
   @CreateDateColumn()

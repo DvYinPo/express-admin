@@ -13,4 +13,15 @@ services:
     ports:
       - ${POSTGRES_PORT}:5432
     volumes:
-      - ${POSTGRES_VOLUMES}:/var/lib/postgresql/data
+      - ${POSTGRES_VOLUMES_DATA}:/var/lib/postgresql/data
+
+  db_redis:
+    image: redis:7
+    container_name: redis7
+    restart: always
+    ports:
+      - ${REDIS_PORT}:6379
+    volumes:
+      - ${REDIS_VOLUMES_DATA}:/data
+    command:
+      /bin/bash -c "redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes"

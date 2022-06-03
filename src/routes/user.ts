@@ -1,29 +1,72 @@
-import express from "express";
+import express,{ Request, Response, NextFunction } from "express";
 const router = express.Router();
 import { dataSource } from "../database";
 import { User } from "../model";
+import { redis } from "../database"
+import { encryption, signToken } from "../util"
 
 /* GET users listing. */
-router.get("/", async function (req, res, next) {
-  const firstUser = "/hahahahaha";
-  res.send(firstUser);
+router.get("/", async function (req: Request, res: Response, next: NextFunction) {
+  res.send("/user");
 });
 
-router.get("/create", async (req, res, next) => {
-  const user = new User();
-  user.firstName = "yinpo" + Math.round(Math.random() * 1000);
-  user.password = "" + Math.round(Math.random() * 100000);
+// todo: unique verification for 'email' and 'phoneNumber'
+router.post("/register", async (req: Request, res: Response, next: NextFunction) => {
 
-  const postRepository = dataSource.getRepository(User);
+  const repository = dataSource.getRepository(User);
+  const user = await repository.findOneBy({ name: req.body.name });
 
-  const result = await postRepository
-    .save(user)
-    .then((user) => {
-      console.log("Post has been saved: ", user);
-    })
-    .catch((error) => console.log("Cannot save. Error: ", error));
+  if (user) {
+    res.status(403).json({
+      code: 100,
+      msg: 'user exited!',
+    });
+    return;
+  }
 
-  res.send(result);
+  const { name, password, email, phoneNumber, avatar } = req.body
+
+  await repository.insert({
+    name,
+    password: encryption(password),
+    email,
+    phoneNumber,
+    avatar,
+  });
+
+  res.status(200).json({
+    code: 0,
+    msg: `${name} register success`
+  });
+
+});
+
+router.post("/login", async (req: Request, res: Response, next: NextFunction) => {
+
+  const { name, password } = req.body
+  const repository = dataSource.getRepository(User);
+  const user = await repository.findOneBy({ name, password: encryption(password) });
+
+  if (!user) {
+    res.status(403).json({
+      code: 100,
+      msg: 'name with this password was not found.',
+    });
+    return;
+  }
+
+  const token = signToken({ name });
+
+  redis.setex(`login:${name}`, 2 * 24 * 60 * 60, token);
+
+  res.status(200).json({
+    code: 0,
+    msg: `${name} login success`,
+    data: {
+      token,
+    }
+  });
+
 });
 
 export default router;

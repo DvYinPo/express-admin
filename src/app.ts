@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import createError from "http-errors";
-import express from "express";
+import express,{ Express, Request, Response, NextFunction } from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
@@ -14,7 +14,7 @@ import routerInit from "./routes";
 // database initialisation
 // import "./database/connection";
 
-var app = express();
+const app: Express = express();
 
 // middleware initialisation
 app.use(logger("dev"));
@@ -27,7 +27,7 @@ app.use(express.static(path.join(__dirname, "public")));
 routerInit(app);
 
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
+app.use(function (req: Request, res: Response, next: NextFunction) {
   next(createError(404, "NOT FOUND!!!"));
 });
 
@@ -39,7 +39,7 @@ app.use(function (err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.send("error");
+  res.send("error" + err.status);
 });
 
 module.exports = app;

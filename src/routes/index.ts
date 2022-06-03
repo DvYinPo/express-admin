@@ -1,4 +1,4 @@
-import express from "express";
+import express,{ Express, Request, Response, NextFunction } from "express";
 const router = express.Router();
 import user from "./user";
 
@@ -9,11 +9,11 @@ const routeList = {
 };
 
 /* GET home page. */
-router.get("/", function (req, res, next) {
+router.get("/", function (req: Request, res: Response, next: NextFunction) {
   res.send("<h1>hello express!</h1>");
 });
 
-export default app => {
+export default (app: Express) => {
   Object.keys(routeList).forEach((path) => {
     app.use(path, routeList[path]);
   });
