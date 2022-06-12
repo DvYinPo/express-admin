@@ -22,5 +22,4 @@ services:
       - ${REDIS_PORT}:6379
     volumes:
       - ${REDIS_VOLUMES_DATA}:/data
-    command:
-      /bin/bash -c "redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes"
+    command: /bin/bash -c "redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes"

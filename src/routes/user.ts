@@ -1,14 +1,14 @@
-import express from "express";
+import express from 'express';
 const router = express.Router();
-import { UserController } from "../controller"
+import { UserController } from '../controller';
 
 /* GET users listing. */
-router.get("/", UserController.index);
+router.get('/', UserController.index);
 
-router.post("/register", UserController.register);
+router.post('/register', UserController.register);
 
-router.post("/login", UserController.login);
+router.post('/login', UserController.login);
 
-router.get("/code/:phone", UserController.code)
+router.get('/code/:phone', UserController.code);
 
 export default router;

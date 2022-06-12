@@ -1,16 +1,16 @@
-import express,{ Express, Request, Response, NextFunction } from "express";
+import express, { Express, Request, Response, NextFunction } from 'express';
 const router = express.Router();
-import user from "./user";
+import user from './user';
 
 /* routes */
 const routeList = {
-  "/": router,
-  "/user": user,
+  '/': router,
+  '/user': user,
 };
 
 /* GET home page. */
-router.get("/", function (req: Request, res: Response, next: NextFunction) {
-  res.send("<h1>hello express!</h1>");
+router.get('/', function (req: Request, res: Response, next: NextFunction) {
+  res.send('<h1>hello express!</h1>');
 });
 
 export default (app: Express) => {

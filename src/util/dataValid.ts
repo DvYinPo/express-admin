@@ -1,21 +1,20 @@
-type valueType = 'phone' | 'email' | 'empty'
+type valueType = 'phone' | 'email' | 'empty';
 
 export const valid = (value: string, type: valueType = 'empty'): boolean => {
-
-  let valid = true
+  let valid = true;
   switch (type) {
     case 'phone':
-      if(!(/^1[3456789]\d{9}$/.test(value))){
+      if (!/^1[3456789]\d{9}$/.test(value)) {
         valid = false;
       }
       break;
     case 'email':
-      if(!(/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/.test(value))){
+      if (!/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/.test(value)) {
         valid = false;
       }
       break;
     case 'empty':
-      if(value.length !== 0){
+      if (value.length !== 0) {
         valid = false;
       }
       break;
@@ -23,4 +22,4 @@ export const valid = (value: string, type: valueType = 'empty'): boolean => {
       valid = true;
   }
   return valid;
-}
+};

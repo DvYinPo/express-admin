@@ -1,4 +1,4 @@
-import Redis from "ioredis"
+import Redis from 'ioredis';
 
 const redisOption: Redis.RedisOptions = {
   port: parseInt(process.env.REDIS_PORT), // Redis port
@@ -9,4 +9,4 @@ const redisOption: Redis.RedisOptions = {
 
 const redis = new Redis(redisOption);
 
-export default redis
+export default redis;

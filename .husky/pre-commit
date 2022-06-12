@@ -3,3 +3,4 @@
 
 echo "execute pre-commit script!!!"
 npx prettier --write .
+git add .
