@@ -1,16 +1,16 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response, NextFunction, RequestHandler } from 'express';
 const router = express.Router();
-import { dataSource } from '../database';
+import { dataSource, redis } from '../database';
 import { User } from '../model';
-import { redis } from '../database';
 import { encryption, signToken, valid, sendMessage } from '../util';
 
 /**
  * index
  * @returns '/user'
  */
-export const index = (req: Request, res: Response, next: NextFunction) => {
+export const index = (req: Request, res: Response, next: NextFunction): Promise<RequestHandler> => {
   res.send('/user');
+  return;
 };
 
 /**
@@ -22,15 +22,18 @@ export const index = (req: Request, res: Response, next: NextFunction) => {
  * @param req.body.avatar string
  * @method POST
  */
-// todo: unique verification for 'email' and 'phoneNumber'
-export const register = async (req: Request, res: Response, next: NextFunction) => {
+export const register = async (req: Request, res: Response, next: NextFunction): Promise<RequestHandler> => {
   const repository = dataSource.getRepository(User);
-  const user = await repository.findOneBy({ name: req.body.name });
+  const user = await repository.findOneBy([
+    { name: req.body.name },
+    { email: req.body.email },
+    { phoneNumber: req.body.phoneNumber },
+  ]);
 
   if (user) {
     res.status(403).json({
       code: 100,
-      msg: 'user exited!',
+      msg: 'name, email or phoneNumber exited!',
     });
     return;
   }
@@ -49,6 +52,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     code: 0,
     msg: `${name} register success`,
   });
+  return;
 };
 
 /**
@@ -57,7 +61,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
  * @param req.body.password string
  * @method POST
  */
-export const login = async (req: Request, res: Response, next: NextFunction) => {
+export const login = async (req: Request, res: Response, next: NextFunction): Promise<RequestHandler> => {
   const { name, password } = req.body;
   const repository = dataSource.getRepository(User);
   const user = await repository.findOneBy({ name, password: encryption(password) });
@@ -70,8 +74,11 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     return;
   }
 
-  const token = signToken({ name });
+  const { email, phoneNumber, avatar } = user;
 
+  const token = signToken({ name, email, phoneNumber, avatar });
+
+  // store the generated JWT after login to verify whether it is the correct
   redis.setex(`login:${name}`, 2 * 24 * 60 * 60, token);
 
   res.status(200).json({
@@ -81,6 +88,29 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       token,
     },
   });
+  return;
+};
+
+/**
+ * 个人简介
+ * @method GET
+ */
+export const profile = async (req: Request, res: Response, next: NextFunction): Promise<RequestHandler> => {
+  if (!req['jwt']) {
+    res.status(401).json({
+      code: 100,
+      msg: 'Please sign in first!!!',
+    });
+    return;
+  }
+
+  res.status(200).json({
+    code: 0,
+    data: {
+      ...req['jwt'],
+    },
+  });
+  return;
 };
 
 /**
@@ -88,7 +118,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
  * @param { string } req.params.phone
  * @method GET
  */
-export const code = async (req: Request, res: Response, next: NextFunction) => {
+export const code = async (req: Request, res: Response, next: NextFunction): Promise<RequestHandler> => {
   const { phone } = req.params;
 
   // 值非法
@@ -138,4 +168,5 @@ export const code = async (req: Request, res: Response, next: NextFunction) => {
     message: 'The verification code is successfully sent, valid for less than 5 minutes.',
     ...result,
   });
+  return;
 };
