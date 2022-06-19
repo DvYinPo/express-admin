@@ -1,7 +1,11 @@
 import express, { Express, Request, Response, NextFunction, Router, RequestHandler } from 'express';
-const router = express.Router();
 import USER from './user';
+import Project from './project';
+import Issue from './issue';
+import Comment from './comment';
 import { authenticate } from '../middleware';
+
+const router = express.Router();
 
 /* routes */
 type routeList = {
@@ -9,7 +13,10 @@ type routeList = {
 };
 const routeList: routeList = {
   '/': [router],
-  '/user': [authenticate, USER],
+  '/user': [USER],
+  '/project': [authenticate, Project],
+  '/issue': [authenticate, Issue],
+  '/comment': [authenticate, Comment],
 };
 
 /* GET home page. */

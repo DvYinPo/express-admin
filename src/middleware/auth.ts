@@ -1,22 +1,28 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { verifyToken } from '../util/authToken';
-import { redis } from '../database';
+import { dataSource, redis } from '../database';
 import createError from 'http-errors';
+import { User } from '../model';
 
 export default async (req: Request, res: Response, next: NextFunction): Promise<RequestHandler> => {
   const header = req.get('Authorization') || '';
   const [b, t] = header.split(' ');
   const token = b === 'Bearer' && t ? t : null;
 
-  const JWTUse = verifyToken(token);
+  const JWTUser = verifyToken(token);
 
-  const jwt = await redis.get(`login:${JWTUse.name}`);
+  const jwt = await redis.get(`login:${JWTUser.name}`);
   if (jwt !== token) {
-    next(createError(401, 'Warning! The JWT seems to be deliberately tampered with!!!'));
+    next(createError(401, 'Warning! Login information has updated, please login again'));
   }
 
-  if (JWTUse.valid) {
-    req['jwt'] = JWTUse;
+  if (JWTUser.valid) {
+    const userRepository = dataSource.getRepository(User);
+    const currentUser = await userRepository.findOneBy({
+      id: JWTUser.id,
+      name: JWTUser.name,
+    });
+    req['currentUser'] = currentUser;
   }
   next();
   return;

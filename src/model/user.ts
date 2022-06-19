@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+  ManyToMany,
+} from 'typeorm';
+import Login from './login';
+import Project from './project';
 
 @Entity()
 export class User {
@@ -17,16 +27,19 @@ export class User {
   @Column('varchar', { nullable: true, unique: true, length: 20 })
   phoneNumber: string;
 
-  @Column('varchar', { default: '/avatar', length: 2000 })
+  @Column('varchar', { default: '/avatar' })
   avatar: string;
+
+  @OneToMany(() => Login, (login) => login.user)
+  login: Login[];
 
   @Column('boolean', { default: true })
   isActive: boolean;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'varchar' })
   createDate: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'varchar' })
   updateDate: Date;
 }
 

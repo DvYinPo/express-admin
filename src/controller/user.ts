@@ -1,7 +1,8 @@
-import express, { Request, Response, NextFunction, RequestHandler } from 'express';
-const router = express.Router();
+import { Request, Response, NextFunction, RequestHandler } from 'express';
+import createError from 'http-errors';
+import { has } from 'lodash';
 import { dataSource, redis } from '../database';
-import { User } from '../model';
+import { Login, User } from '../model';
 import { encryption, signToken, valid, sendMessage } from '../util';
 
 /**
@@ -23,22 +24,28 @@ export const index = (req: Request, res: Response, next: NextFunction): Promise<
  * @method POST
  */
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<RequestHandler> => {
-  const repository = dataSource.getRepository(User);
-  const user = await repository.findOneBy([
-    { name: req.body.name },
-    { email: req.body.email },
-    { phoneNumber: req.body.phoneNumber },
-  ]);
+  const { name, password, email, phoneNumber, avatar } = req.body;
 
+  const repository = dataSource.getRepository(User);
+  const user = await repository.findOneBy([{ name }, { email }, { phoneNumber }]);
+
+  // user repeated
   if (user) {
+    let invalid =
+      user.name === name
+        ? 'name'
+        : user.email === email
+        ? 'email'
+        : user.phoneNumber === phoneNumber
+        ? 'phoneNumber'
+        : 'user';
+
     res.status(403).json({
       code: 100,
-      msg: 'name, email or phoneNumber exited!',
+      msg: `${invalid} exited!`,
     });
     return;
   }
-
-  const { name, password, email, phoneNumber, avatar } = req.body;
 
   await repository.insert({
     name,
@@ -62,9 +69,34 @@ export const register = async (req: Request, res: Response, next: NextFunction):
  * @method POST
  */
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<RequestHandler> => {
-  const { name, password } = req.body;
+  const { name, email, phoneNumber, code, password } = req.body;
+
+  // value valid
+  const queryData = {};
+  if (!valid.isEmpty(name)) queryData['name'] = name;
+  if (!valid.isEmpty(password)) queryData['password'] = encryption(req.body.password);
+  if (!valid.isEmpty(email)) queryData['email'] = email;
+  if (!valid.isEmpty(phoneNumber)) queryData['phoneNumber'] = phoneNumber;
+  if (!valid.isEmpty(code)) queryData['code'] = code;
+
+  if (
+    !(has(queryData, 'name') && has(queryData, 'password')) &&
+    !(has(queryData, 'email') && has(queryData, 'password')) &&
+    !(has(queryData, 'phoneNumber') && has(queryData, 'password')) &&
+    !(has(queryData, 'phoneNumber') && has(queryData, 'code'))
+  ) {
+    next(createError(403, 'Warning! Parameter is required!!!'));
+    return;
+  }
+
+  // todo: code to login and register
   const repository = dataSource.getRepository(User);
-  const user = await repository.findOneBy({ name, password: encryption(password) });
+  const user = await repository.findOne({
+    where: { ...queryData },
+    relations: {
+      login: true,
+    },
+  });
 
   if (!user) {
     res.status(403).json({
@@ -74,9 +106,16 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     return;
   }
 
-  const { email, phoneNumber, avatar } = user;
+  // create login information
+  await dataSource.getRepository(Login).insert({
+    ip: req.ip,
+    mac: req['mac'],
+    user: user,
+  });
 
-  const token = signToken({ name, email, phoneNumber, avatar });
+  const { avatar, login } = user;
+
+  const token = signToken({ name, email, phoneNumber, avatar, login });
 
   // store the generated JWT after login to verify whether it is the correct
   redis.setex(`login:${name}`, 2 * 24 * 60 * 60, token);
@@ -96,7 +135,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
  * @method GET
  */
 export const profile = async (req: Request, res: Response, next: NextFunction): Promise<RequestHandler> => {
-  if (!req['jwt']) {
+  if (!req['currentUser']) {
     res.status(401).json({
       code: 100,
       msg: 'Please sign in first!!!',
@@ -107,7 +146,7 @@ export const profile = async (req: Request, res: Response, next: NextFunction): 
   res.status(200).json({
     code: 0,
     data: {
-      ...req['jwt'],
+      ...req['currentUser'],
     },
   });
   return;
@@ -122,9 +161,9 @@ export const code = async (req: Request, res: Response, next: NextFunction): Pro
   const { phone } = req.params;
 
   // 值非法
-  console.log('=> valid', phone, valid(phone, 'phone'));
+  console.log('=> valid', phone, valid.phone(phone));
 
-  if (!valid(phone, 'phone')) {
+  if (!valid.phone(phone)) {
     res.status(403).json({
       code: 100,
       message: 'request phone number!',
